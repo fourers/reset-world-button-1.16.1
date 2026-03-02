@@ -29,7 +29,7 @@ public abstract class PauseScreenMixin extends Screen {
     private void addResetWorldButton(CallbackInfo ci) {
         this.addButton(new Button(
                 this.width / 2 - 102,
-                this.height / 4 + 136,
+                this.height / 4 + 144 - 16,
                 204,
                 20,
                 new TextComponent("Reset World"),
