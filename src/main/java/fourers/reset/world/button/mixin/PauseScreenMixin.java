@@ -86,13 +86,11 @@ public abstract class PauseScreenMixin extends Screen {
             RegistryAccess.RegistryHolder registryHolder = RegistryAccess.builtin();
 
 			LOGGER.info("Will reset world: {}", levelId);
-
             mc.level.disconnect();
-            mc.setScreen(new TitleScreen());
+
             mc.execute(() -> {
                 try {
 					LOGGER.info("Resetting world: {}", levelId);
-
                     deleteDir(worldDir);
 
                     LOGGER.info("Recreating world: {}", levelId);
