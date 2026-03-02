@@ -3,7 +3,9 @@
 	"package": "fourers.reset.world.button.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
-		"PauseScreenMixin"
+		"DeathScreenMixin",
+		"PauseScreenMixin",
+		"ResetWorldTickMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
