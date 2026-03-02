@@ -8,10 +8,15 @@ import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.WorldData;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -75,21 +80,24 @@ public abstract class PauseScreenMixin extends Screen {
 			Path worldDir = server.getWorldPath(LevelResource.ROOT);
 			String levelId = worldDir.toAbsolutePath().getParent().getFileName().toString();
 
+            WorldData worldData = server.getWorldData();
+            LevelSettings lockedLevelSettings = worldData.getLevelSettings();
+            WorldGenSettings lockedGenSettings = worldData.worldGenSettings();
+
+            RegistryAccess.RegistryHolder registryHolder = RegistryAccess.builtin();
+
 			LOGGER.info("Will reset world: {}", levelId);
 
             mc.level.disconnect();
             mc.setScreen(new TitleScreen());
-
             mc.execute(() -> {
                 try {
 					LOGGER.info("Resetting world: {}", levelId);
 
-                    // Open a LevelStorageSource session to get the world directory
-                    deleteWorldData(worldDir);
+                    deleteDir(worldDir);
 
-                    // Reload the world by its level ID
-                    // This is exactly what WorldSelectionList does to open a world in 1.16.x
-					mc.loadLevel(levelId);
+                    LOGGER.info("Recreating world: {}", levelId);
+					mc.createLevel(levelId, lockedLevelSettings, registryHolder, lockedGenSettings);
                 } catch (Exception e) {
                     LOGGER.error("Failed to reset world", e);
                 }
@@ -97,30 +105,6 @@ public abstract class PauseScreenMixin extends Screen {
         } else {
             LOGGER.warn("Not in a singleplayer world — cannot reset.");
         }
-    }
-
-    /**
-     * Deletes region/chunk data for all vanilla dimensions, preserving level.dat
-     * so the world is regenerated with the same seed and settings.
-     */
-    private void deleteWorldData(Path worldDir) throws IOException {
-        // Overworld
-        deleteDir(worldDir.resolve("region"));
-        deleteDir(worldDir.resolve("entities"));
-        deleteDir(worldDir.resolve("poi"));
-
-        // Nether (DIM-1)
-        deleteDir(worldDir.resolve("DIM-1/region"));
-        deleteDir(worldDir.resolve("DIM-1/entities"));
-
-        // The End (DIM1)
-        deleteDir(worldDir.resolve("DIM1/region"));
-        deleteDir(worldDir.resolve("DIM1/entities"));
-
-		// Player data
-		deleteDir(worldDir.resolve("playerdata"));
-
-        LOGGER.info("Deleted world data from {}", worldDir);
     }
 
     private void deleteDir(Path dir) throws IOException {
