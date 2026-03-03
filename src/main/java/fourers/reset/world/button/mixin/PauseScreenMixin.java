@@ -1,5 +1,7 @@
 package fourers.reset.world.button.mixin;
 
+import fourers.reset.world.button.core.ResetWorldHandler;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -14,8 +16,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import fourers.reset.world.button.ResetWorldHandler;
 
 @Environment(EnvType.CLIENT)
 @Mixin(PauseScreen.class)
@@ -35,19 +35,43 @@ public abstract class PauseScreenMixin extends Screen {
                 new TextComponent("Reset World"),
                 button -> showConfirmScreen()
         ));
+        this.addButton(new Button(
+                this.width / 2 - 102,
+                this.height / 4 + 168 - 16,
+                204,
+                20,
+                new TextComponent("Reset New Seed"),
+                button -> showConfirmNewSeedScreen()
+        ));
     }
 
     private void showConfirmScreen() {
         Minecraft.getInstance().setScreen(new ConfirmScreen(
                 confirmed -> {
                     if (confirmed) {
-                        ResetWorldHandler.resetWorld();
+                        ResetWorldHandler.resetWorld(false);
                     } else {
                         Minecraft.getInstance().setScreen((Screen)(Object)this);
                     }
                 },
                 new TextComponent("Reset World?"),
                 new TextComponent("This will delete ALL world data and regenerate the world with the same seed. This cannot be undone!"),
+                new TranslatableComponent("gui.yes"),
+                new TranslatableComponent("gui.no")
+        ));
+    }
+
+    private void showConfirmNewSeedScreen() {
+        Minecraft.getInstance().setScreen(new ConfirmScreen(
+                confirmed -> {
+                    if (confirmed) {
+                        ResetWorldHandler.resetWorld(true);
+                    } else {
+                        Minecraft.getInstance().setScreen((Screen)(Object)this);
+                    }
+                },
+                new TextComponent("Reset World?"),
+                new TextComponent("This will delete ALL world data and regenerate the world with a new seed. This cannot be undone!"),
                 new TranslatableComponent("gui.yes"),
                 new TranslatableComponent("gui.no")
         ));

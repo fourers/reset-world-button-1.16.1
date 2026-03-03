@@ -4,6 +4,7 @@
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
 		"DeathScreenMixin",
+		"MinecraftServerAccessor",
 		"PauseScreenMixin",
 		"ResetWorldTickMixin"
 	],
