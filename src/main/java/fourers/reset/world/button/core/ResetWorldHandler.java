@@ -5,26 +5,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.OptionalLong;
 import java.util.Random;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.LevelSettings;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.WorldData;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.mojang.serialization.DynamicOps;
 
 import fourers.reset.world.button.mixin.MinecraftServerAccessor;
 
@@ -74,7 +67,7 @@ public class ResetWorldHandler {
 
         WorldGenSettings worldGenSettings;
         if (isNewSeed) {
-            worldGenSettings = randomiseWorldSeed(currentWorldGenSettings);
+            worldGenSettings = randomiseWorldSeed(currentWorldGenSettings, levelSettings.hardcore());
         } else {
             worldGenSettings = currentWorldGenSettings;
         }
@@ -101,12 +94,12 @@ public class ResetWorldHandler {
 		return worldDir.toAbsolutePath().getParent().getFileName().toString();
     }
 
-    private static WorldGenSettings randomiseWorldSeed(WorldGenSettings worldGenSettings) {
+    private static WorldGenSettings randomiseWorldSeed(WorldGenSettings worldGenSettings, boolean isHardcore) {
         long seed = worldGenSettings.seed();
         long newSeed = new Random().nextLong();
 
         LOGGER.info("Randomising seed from '{}' to {}", seed, newSeed);
-        return new WorldGenSettings(newSeed, worldGenSettings.generateFeatures(), worldGenSettings.generateBonusChest(), worldGenSettings.dimensions());
+        return worldGenSettings.withSeed(isHardcore, OptionalLong.of(newSeed));
     }
 
     private static void deleteDir(Path dir) throws IOException {

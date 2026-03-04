@@ -3,7 +3,7 @@
 	"id": "reset-world-button",
 	"version": "${version}",
 	"name": "Reset World Button",
-	"description": "Add a reset world button to pause menu.",
+	"description": "Add a reset world button to game menu.",
 	"authors": [
 		"Me!"
 	],
